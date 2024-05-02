@@ -15,6 +15,15 @@ const chart = LightweightCharts.createChart(chartContainer, cfg.chartProperties)
 
 
 
+const throttleInterval = 1000; // Throttle interval in milliseconds
+
+const throttledGetHistoryCandles = throttle.asyncThrottle(getHistoryCandles, throttleInterval);
+const throttledPreLoadHistoryCandles = throttle.asyncThrottle(preLoadHistoryCandles, throttleInterval);
+const throttledGetHistoryLines = throttle.asyncThrottle(getHistoryLines, throttleInterval);
+const throttledPreLoadHistoryLines = throttle.asyncThrottle(preLoadHistoryLines, throttleInterval);
+
+const onVisibleLogicalRangeChangedThrottled = throttle(onVisibleLogicalRangeChanged, throttleInterval);
+
 // Applying global chart options
 chart.applyOptions({
   localization: {
@@ -49,8 +58,8 @@ document.addEventListener('DOMContentLoaded', initializeChartWithData(chart, ser
 document.addEventListener('DOMContentLoaded', connectWebSocket(series));
 
 //Caching historical data for quick retrieval
-document.addEventListener('DOMContentLoaded', throttle.throttledPreLoadHistoryCandles(symbol, timeframe))
-document.addEventListener('DOMContentLoaded', throttle.throttledPreLoadHistoryLines(symbol, timeframe))
+document.addEventListener('DOMContentLoaded', throttledPreLoadHistoryCandles(symbol, timeframe))
+document.addEventListener('DOMContentLoaded', throttledPreLoadHistoryLines(symbol, timeframe))
 
 async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
   try {
@@ -61,13 +70,13 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
       const earliestVisibleTime = chart.timeScale().getVisibleRange().from;
       const startDateForFetch = getCurrentYYMMDD(earliestVisibleTime * 1000); // back to ms
 
-      const candlePreloadResult = await throttle.throttledPreLoadHistoryCandles(symbol, timeframe, startDateForFetch)
-      const linesPreloadResult = await throttle.throttledPreLoadHistoryLines(symbol, timeframe)
+      const candlePreloadResult = await throttledPreLoadHistoryCandles(symbol, timeframe, startDateForFetch)
+      const linesPreloadResult = await throttledPreLoadHistoryLines(symbol, timeframe)
 
-      const historicalCandles = await throttle.throttledGetHistoryCandles(symbol, timeframe);
+      const historicalCandles = await throttledGetHistoryCandles(symbol, timeframe);
       const fetchedCandles = await fetchCandleData(symbol, timeframe)
 
-      const { extremum, wave, trends } = await throttle.throttledGetHistoryLines(symbol, timeframe);
+      const { extremum, wave, trends } = await throttledGetHistoryLines(symbol, timeframe);
 
       const mergedCandles = fetchedCandles ? [...historicalCandles
         .filter(candle => candle.time < fetchedCandles[0].time),
@@ -128,17 +137,17 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
 }
 
 
-chart.timeScale().subscribeVisibleLogicalRangeChange(throttle.onVisibleLogicalRangeChangedThrottled);
+chart.timeScale().subscribeVisibleLogicalRangeChange(onVisibleLogicalRangeChangedThrottled);
 
 
 document.getElementById('loadDataButton').addEventListener('click', async () => {
   try {
-    const candlePreloadResult = await throttle.throttledPreLoadHistoryCandles(symbol, timeframe)
-    const linesPreloadResult = await throttle.throttledPreLoadHistoryLines(symbol, timeframe)
+    const candlePreloadResult = await throttledPreLoadHistoryCandles(symbol, timeframe)
+    const linesPreloadResult = await throttledPreLoadHistoryLines(symbol, timeframe)
 
-    const { extremum, wave, trends } = await throttle.throttledGetHistoryLines(symbol, timeframe);
+    const { extremum, wave, trends } = await throttledGetHistoryLines(symbol, timeframe);
 
-    const historicalCandles = await throttle.throttledGetHistoryCandles(symbol, timeframe);
+    const historicalCandles = await throttledGetHistoryCandles(symbol, timeframe);
     const fetchedCandles = await fetchCandleData(symbol, timeframe)
 
     const mergedCandles = fetchedCandles ? [...historicalCandles

@@ -51,4 +51,8 @@ const onVisibleLogicalRangeChangedThrottled = throttle(onVisibleLogicalRangeChan
 //     clearTimeout(debounceTimer);
 //     debounceTimer = setTimeout(() => onVisibleLogicalRangeChanged(newVisibleLogicalRange), 250); // 500 ms debounce period
 // }
-export { throttle, asyncThrottle, throttledGetHistoryCandles, throttledPreLoadHistoryCandles, throttledGetHistoryLines, throttledPreLoadHistoryLines, onVisibleLogicalRangeChangedThrottled }
+export {
+  throttle, asyncThrottle
+  // , throttledGetHistoryCandles, throttledPreLoadHistoryCandles, throttledGetHistoryLines, throttledPreLoadHistoryLines, onVisibleLogicalRangeChangedThrottled
+
+}
