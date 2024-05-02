@@ -67,7 +67,7 @@ export const candleSeriesConfig = {
   },
 };
 
-export const vmaSeriesConfig =  {
+export const vmaSeriesConfig = {
   color: '#EBA500',
   lineWidth: 2,
   lineType: 2,
