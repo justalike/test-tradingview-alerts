@@ -1,6 +1,6 @@
 
 import * as cfg from './config/index.js';
-import * as throttle from './utils/throttle.js';
+import { asyncThrottle } from './utils/throttle.js';
 import { createSeries, updateSeriesData, setChartSize, getQueryParams, getCurrentYYMMDD, calculateVMA, updateSeriesOptions } from './utils/utils.js';
 import { initializeChartWithData, updateChartWithExtremaData, updateChartWithTrendData, updateChartWithWaveData } from './chart/chartUpdateService.js';
 import { handleCandleDataUpload } from './local/localHandler.js';
@@ -17,10 +17,10 @@ const chart = LightweightCharts.createChart(chartContainer, cfg.chartProperties)
 
 const throttleInterval = 1000; // Throttle interval in milliseconds
 
-const throttledGetHistoryCandles = throttle.asyncThrottle(getHistoryCandles, throttleInterval);
-const throttledPreLoadHistoryCandles = throttle.asyncThrottle(preLoadHistoryCandles, throttleInterval);
-const throttledGetHistoryLines = throttle.asyncThrottle(getHistoryLines, throttleInterval);
-const throttledPreLoadHistoryLines = throttle.asyncThrottle(preLoadHistoryLines, throttleInterval);
+const throttledGetHistoryCandles = asyncThrottle(getHistoryCandles, throttleInterval);
+const throttledPreLoadHistoryCandles = asyncThrottle(preLoadHistoryCandles, throttleInterval);
+const throttledGetHistoryLines = asyncThrottle(getHistoryLines, throttleInterval);
+const throttledPreLoadHistoryLines = asyncThrottle(preLoadHistoryLines, throttleInterval);
 
 const onVisibleLogicalRangeChangedThrottled = throttle(onVisibleLogicalRangeChanged, throttleInterval);
 
