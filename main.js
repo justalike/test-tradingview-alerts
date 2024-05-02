@@ -1,6 +1,6 @@
 
 import * as cfg from './config/index.js';
-import { asyncThrottle } from './utils/throttle.js';
+import { throttle, asyncThrottle } from './utils/throttle.js';
 import { createSeries, updateSeriesData, setChartSize, getQueryParams, getCurrentYYMMDD, calculateVMA, updateSeriesOptions } from './utils/utils.js';
 import { initializeChartWithData, updateChartWithExtremaData, updateChartWithTrendData, updateChartWithWaveData } from './chart/chartUpdateService.js';
 import { handleCandleDataUpload } from './local/localHandler.js';
