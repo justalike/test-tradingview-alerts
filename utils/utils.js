@@ -1,7 +1,7 @@
 // Utility functions for series creation
 var cachedWaveSeries = [];
 var keyBarLineList = [];
-export async function processTimeFrames(data) {
+export function processTimeFrames(data) {
   data.sort((a, b) => a.start - b.start);
   const processedData = [];
   for (let i = 0; i < data.length; i++) {
