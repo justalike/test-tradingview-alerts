@@ -14,6 +14,8 @@ console.log(`__..--..`.repeat(10))
 const chartContainer = document.getElementById('tvchart');
 const chart = LightweightCharts.createChart(chartContainer, cfg.chartProperties);
 
+
+
 const throttleInterval = 2000; // Throttle interval in milliseconds
 
 const throttledGetHistoryCandles = asyncThrottle(getHistoryCandles, throttleInterval);
@@ -65,12 +67,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+let isUpdating = false;
+
 async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
+  if (isUpdating) return;
+
+  isUpdating = true;
   try {
     const barsInfo = series.candles_series.barsInLogicalRange(newVisibleLogicalRange);
 
-    // If there are less than 150 bars to the left of the visible area, load more data
-    if (barsInfo !== null && barsInfo.barsBefore < 150) {
+    // If there are less than 50 bars to the left of the visible area, load more data
+    if (barsInfo !== null && barsInfo.barsBefore < 50) {
 
       const historicalCandles = await throttledGetHistoryCandles(symbol, timeframe);
       const fetchedCandles = await fetchCandleData(symbol, timeframe)
@@ -106,13 +113,8 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
 
       if (!extremum || !wave || !trends) { console.log('Extrema or wave or trends are nullish') }
 
-      if (mergedCandles.length < 3000) {
-        updateChartWithExtremaData(chart, series.extrema_series, extremum)
-        updateChartWithWaveData(chart, series.wave_series, series.candles_series, mergedCandles, wave);
-      } else {
-        removeSeries(chart, series.extrema_series)
-        removeSeries(chart, series.wave_series)
-      }
+      updateChartWithExtremaData(chart, series.extrema_series, extremum)
+      updateChartWithWaveData(chart, series.wave_series, series.candles_series, mergedCandles, wave);
       updateChartWithTrendData(chart, mergedCandles, trends)
 
 
@@ -146,6 +148,8 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
 
   } catch (error) {
     console.error(`Error loading historical data for ${symbol} on ${timeframe}:`, error);
+  } finally {
+    isUpdating = false;
   }
 
 }
@@ -192,16 +196,8 @@ document.getElementById('loadDataButton')
       }
 
       if (extremum && wave && trends) {
-
-        if (mergedCandles.length < 3000) { // if we exceed 3k candles then we dont need extremas and waves
-          updateChartWithExtremaData(chart, series.extrema_series, extremum)
-          updateChartWithWaveData(chart, series.wave_series, series.candles_series, mergedCandles, wave);
-        }
-        if (mergedCandles.length > 3000) {
-          removeSeries(chart, series.extrema_series)
-          removeSeries(chart, series.wave_series)
-        }
-
+        updateChartWithExtremaData(chart, series.extrema_series, extremum)
+        updateChartWithWaveData(chart, series.wave_series, series.candles_series, mergedCandles, wave);
         updateChartWithTrendData(chart, mergedCandles, trends)
       }
 
