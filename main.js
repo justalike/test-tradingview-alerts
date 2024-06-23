@@ -1,7 +1,7 @@
 
 import * as cfg from './config/index.js';
 import { throttle, asyncThrottle } from './utils/throttle.js';
-import { createSeries, updateSeriesData, setChartSize, getQueryParams, getCurrentYYMMDD, calculateVMA, updateSeriesOptions } from './utils/utils.js';
+import { createSeries, updateSeriesData, setChartSize, getQueryParams, getCurrentYYMMDD, calculateVMA, updateSeriesOptions, removeSeries } from './utils/utils.js';
 import { initializeChartWithData, updateChartWithExtremaData, updateChartWithTrendData, updateChartWithWaveData } from './chart/chartUpdateService.js';
 import { handleCandleDataUpload } from './local/localHandler.js';
 import { fetchCandleData, getHistoryCandles, preLoadHistoryCandles, getHistoryLines, preLoadHistoryLines } from './api/dataService.js';
@@ -189,10 +189,15 @@ document.getElementById('loadDataButton')
 
       if (extremum && wave && trends) {
 
-        if (!mergedCandles.length > 3000) { // if we exceed 3k candles then we dont need extremas and waves
+        if (mergedCandles.length < 3000) { // if we exceed 3k candles then we dont need extremas and waves
           updateChartWithExtremaData(chart, series.extrema_series, extremum)
           updateChartWithWaveData(chart, series.wave_series, series.candles_series, mergedCandles, wave);
         }
+        if (mergedCandles.length > 3000) {
+          removeSeries(chart, series.extrema_series)
+          removeSeries(chart, series.wave_series)
+        }
+
         updateChartWithTrendData(chart, mergedCandles, trends)
       }
 
