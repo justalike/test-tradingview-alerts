@@ -135,11 +135,12 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
         },
       })
 
+      const earliestVisibleTime = chart.timeScale().getVisibleRange().from;
+      const startDateForFetch = getCurrentYYMMDD(earliestVisibleTime * 1000); // back to ms
+      throttledPreLoadHistoryCandles(symbol, timeframe, startDateForFetch)
+      throttledPreLoadHistoryLines(symbol, timeframe)
     }
-    const earliestVisibleTime = chart.timeScale().getVisibleRange().from;
-    const startDateForFetch = getCurrentYYMMDD(earliestVisibleTime * 1000); // back to ms
-    throttledPreLoadHistoryCandles(symbol, timeframe, startDateForFetch)
-    throttledPreLoadHistoryLines(symbol, timeframe)
+
     isInUpdateState = false
   } catch (error) {
     console.error(`Error loading historical data for ${symbol} on ${timeframe}:`, error);
