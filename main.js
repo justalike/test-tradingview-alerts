@@ -54,12 +54,17 @@ const { symbol, timeframe } = await getQueryParams();
 
 
 window.addEventListener('resize', setChartSize(chart));
-document.addEventListener('DOMContentLoaded', initializeChartWithData(chart, series));
-document.addEventListener('DOMContentLoaded', connectWebSocket(series));
-
-//Caching historical data for quick retrieval
-document.addEventListener('DOMContentLoaded', throttledPreLoadHistoryCandles(symbol, timeframe))
-document.addEventListener('DOMContentLoaded', throttledPreLoadHistoryLines(symbol, timeframe))
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    await initializeChartWithData(chart, series);
+    await connectWebSocket(series);
+    await throttledPreLoadHistoryCandles(symbol, timeframe);
+    await throttledPreLoadHistoryLines(symbol, timeframe);
+  } catch (error) {
+    console.error('Error:', error);
+    // Handle the error appropriately
+  }
+});
 
 async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
   try {
