@@ -188,8 +188,11 @@ document.getElementById('loadDataButton')
       }
 
       if (extremum && wave && trends) {
-        updateChartWithExtremaData(chart, series.extrema_series, extremum)
-        updateChartWithWaveData(chart, series.wave_series, series.candles_series, mergedCandles, wave);
+
+        if (!mergedCandles.length > 3000) { // if we exceed 3k candles then we dont need extremas and waves
+          updateChartWithExtremaData(chart, series.extrema_series, extremum)
+          updateChartWithWaveData(chart, series.wave_series, series.candles_series, mergedCandles, wave);
+        }
         updateChartWithTrendData(chart, mergedCandles, trends)
       }
 
