@@ -8,7 +8,6 @@ import { fetchCandleData, getHistoryCandles, preLoadHistoryCandles, getHistoryLi
 import { connectWebSocket } from './api/ws.js';
 
 
-var isInUpdateState = false;
 
 console.log(`__..--..`.repeat(10))
 
@@ -17,14 +16,14 @@ const chart = LightweightCharts.createChart(chartContainer, cfg.chartProperties)
 
 
 
-const throttleInterval = 1000; // Throttle interval in milliseconds
+const throttleInterval = 2000; // Throttle interval in milliseconds
 
 const throttledGetHistoryCandles = asyncThrottle(getHistoryCandles, throttleInterval);
 const throttledPreLoadHistoryCandles = asyncThrottle(preLoadHistoryCandles, throttleInterval);
 const throttledGetHistoryLines = asyncThrottle(getHistoryLines, throttleInterval);
 const throttledPreLoadHistoryLines = asyncThrottle(preLoadHistoryLines, throttleInterval);
 
-const onVisibleLogicalRangeChangedThrottled = throttle(onVisibleLogicalRangeChanged, throttleInterval);
+const onVisibleLogicalRangeChangedThrottled = asyncThrottle(onVisibleLogicalRangeChanged, throttleInterval);
 
 // Applying global chart options
 chart.applyOptions({
@@ -71,10 +70,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
   try {
     const barsInfo = series.candles_series.barsInLogicalRange(newVisibleLogicalRange);
-    console.log(`update state:`, isInUpdateState)
+
     // If there are less than 50 bars to the left of the visible area, load more data
-    if (barsInfo !== null && barsInfo.barsBefore < 50 && !isInUpdateState) {
-      isInUpdateState = true
+    if (barsInfo !== null && barsInfo.barsBefore < 50) {
 
       const historicalCandles = await throttledGetHistoryCandles(symbol, timeframe);
       const fetchedCandles = await fetchCandleData(symbol, timeframe)
@@ -141,7 +139,7 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
       throttledPreLoadHistoryLines(symbol, timeframe)
     }
 
-    isInUpdateState = false
+
   } catch (error) {
     console.error(`Error loading historical data for ${symbol} on ${timeframe}:`, error);
   }
