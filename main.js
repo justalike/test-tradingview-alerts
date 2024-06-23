@@ -69,8 +69,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
   try {
     const barsInfo = series.candles_series.barsInLogicalRange(newVisibleLogicalRange);
-    // If there are less than 150 bars to the left of the visible area, load more data
-    if (barsInfo !== null && barsInfo.barsBefore < 100) {
+    // If there are less than 50 bars to the left of the visible area, load more data
+    if (barsInfo !== null && barsInfo.barsBefore < 50) {
 
       const earliestVisibleTime = chart.timeScale().getVisibleRange().from;
       const startDateForFetch = getCurrentYYMMDD(earliestVisibleTime * 1000); // back to ms
@@ -95,24 +95,26 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
 
       const VMA5 = calculateVMA(volumes, 5);
       console.log('VMA200', VMA200)
+      if (!historicalCandles || !fetchedCandles) {
+        console.error('Existing or fetched candles are nullish')
+      }
 
-      if (historicalCandles && fetchedCandles) {
-        updateSeriesData(series.candles_series, mergedCandles)
-      } else { console.log('Existing or fetched candles are nullish') }
+      updateSeriesData(series.candles_series, mergedCandles)
 
-      if (volumes) {
-        updateSeriesData(series.volume_series, volumes)
-        updateSeriesData(series.vma_200, VMA200)
-        updateSeriesData(series.vma_5, VMA5)
-        updateSeriesOptions(series.vma_200, { color: '#2D1FF0' })
-        updateSeriesOptions(series.vma_5, { color: '#F49212' })
-      } else { console.log('Volumes are nullish') }
 
-      if (extremum && wave && trends) {
-        updateChartWithExtremaData(chart, series.extrema_series, extremum)
-        updateChartWithWaveData(chart, series.wave_series, series.candles_series, mergedCandles, wave);
-        updateChartWithTrendData(chart, mergedCandles, trends)
-      } else { console.log('Extrema or wave or trends are nullish') }
+      if (!volumes) { console.log('Volumes are nullish') }
+      updateSeriesData(series.volume_series, volumes)
+      updateSeriesData(series.vma_200, VMA200)
+      updateSeriesData(series.vma_5, VMA5)
+      updateSeriesOptions(series.vma_200, { color: '#2D1FF0' })
+      updateSeriesOptions(series.vma_5, { color: '#F49212' })
+
+
+      if (!extremum || !wave || !trends) { console.log('Extrema or wave or trends are nullish') }
+      updateChartWithExtremaData(chart, series.extrema_series, extremum)
+      updateChartWithWaveData(chart, series.wave_series, series.candles_series, mergedCandles, wave);
+      updateChartWithTrendData(chart, mergedCandles, trends)
+
 
       series.vma_200.priceScale().applyOptions({
         scaleMargins: {
