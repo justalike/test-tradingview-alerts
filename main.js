@@ -100,7 +100,7 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
         console.error('Existing or fetched candles are nullish')
       }
 
-      updateSeriesData(series.candles_series, mergedCandles)
+      await updateSeriesData(series.candles_series, mergedCandles)
 
 
       if (!volumes) { console.log('Volumes are nullish') }
