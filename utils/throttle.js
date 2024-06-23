@@ -1,13 +1,19 @@
 import { getHistoryCandles, preLoadHistoryCandles, getHistoryLines, preLoadHistoryLines } from '../api/dataService.js';
 import { onVisibleLogicalRangeChanged } from '../main.js';
-
 function throttle(func, interval) {
   let lastCall = 0;
+  let isFinished = true; // Flag to track if the function has finished execution
+
   return function (...args) {
     const now = Date.now();
-    if (now - lastCall >= interval) {
+    if (now - lastCall >= interval && isFinished) {
       lastCall = now;
-      func.apply(this, args);
+      isFinished = false; // Mark as not finished
+      try {
+        func.apply(this, args);
+      } finally {
+        isFinished = true; // Mark as finished after execution
+      }
     }
   };
 }
@@ -15,13 +21,15 @@ function throttle(func, interval) {
 function asyncThrottle(func, interval) {
   let lastCall = 0;
   let pendingPromise = null;
+  let isFinished = true; // Flag to track if the function has finished execution
 
   return async function (...args) {
     const now = Date.now();
-    if (now - lastCall < interval) {
-      return pendingPromise; // Return the pending promise if within the interval
+    if (now - lastCall < interval || !isFinished) {
+      return pendingPromise; // Return the pending promise if within the interval or if not finished
     }
     lastCall = now;
+    isFinished = false; // Mark as not finished
     pendingPromise = func.apply(this, args);
     try {
       const result = await pendingPromise;
@@ -29,14 +37,13 @@ function asyncThrottle(func, interval) {
     } catch (error) {
       throw error;
     } finally {
-      pendingPromise = null; // Reset after completion
+      isFinished = true; // Mark as finished after completion
+      pendingPromise = null; // Reset the promise
     }
   };
 }
 
-
-
-
+// Example usage:
 const throttleInterval = 1000; // Throttle interval in milliseconds
 
 const throttledGetHistoryCandles = asyncThrottle(getHistoryCandles, throttleInterval);
@@ -45,6 +52,7 @@ const throttledGetHistoryLines = asyncThrottle(getHistoryLines, throttleInterval
 const throttledPreLoadHistoryLines = asyncThrottle(preLoadHistoryLines, throttleInterval);
 
 const onVisibleLogicalRangeChangedThrottled = throttle(onVisibleLogicalRangeChanged, throttleInterval);
+
 
 // let debounceTimer;
 // function onVisibleLogicalRangeChangedDebounced(newVisibleLogicalRange) {
