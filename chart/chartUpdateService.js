@@ -137,7 +137,7 @@ export async function updateChartWithWaveData(chart, waveseries, candleSeries, c
 
   const validData = data.filter(item => isValidWaveData(item));
 
-  const processedData = processTimeFrames(validData).flatMap(wave => ({
+  const processedData = await processTimeFrames(validData).flatMap(wave => ({
     time: wave.start / 1000,
     value: wave.startValue,
     color: wave.startValue < wave.endValue ? 'green' : 'red',
