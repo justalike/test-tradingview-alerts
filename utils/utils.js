@@ -1,7 +1,7 @@
 // Utility functions for series creation
 var cachedWaveSeries = [];
 var keyBarLineList = [];
-export function processTimeFrames(data) {
+export async function processTimeFrames(data) {
   data.sort((a, b) => a.start - b.start);
   const processedData = [];
   for (let i = 0; i < data.length; i++) {
@@ -23,7 +23,7 @@ export function processTimeFrames(data) {
 }
 
 
-export function processKeyBars(chart, waveSeries, candleSeries, candleSeriesData, data) {
+export async function processKeyBars(chart, waveSeries, candleSeries, candleSeriesData, data) {
 
   keyBarLineList.forEach(series => chart.removeSeries(series));
   //waveSeries.forEach(series => chart.removeSeries(series));
@@ -80,7 +80,7 @@ export function processKeyBars(chart, waveSeries, candleSeries, candleSeriesData
 
       updateSeriesData(candleSeries, newCandles);
 
-      function createAndSetLineSeries(data) {
+      async function createAndSetLineSeries(data) {
         const keyBarlineSeries = chart.addLineSeries({
           color: 'orange',
           lineWidth: 2,
@@ -121,7 +121,7 @@ export const createSeries = (chart, type, config) => {
   return seriesTypes[type]();
 };
 
-export const updateSeriesData = (series, data) => {
+export const updateSeriesData = async (series, data) => {
   //console.log('Updating series data:', series, data);
   series.setData(data);
 };

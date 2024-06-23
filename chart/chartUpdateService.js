@@ -94,7 +94,7 @@ export const initializeChartWithData = async (chart, series, sym = 'BTC/USDT', t
   }
 }
 
-export function updateChartWithExtremaData(chart, series, data) {
+export async function updateChartWithExtremaData(chart, series, data) {
   if (!data.every(item => isValidExtremaData(item))) {
     console.log('Invalid extrema data');
     return;
@@ -127,7 +127,7 @@ export function updateChartWithExtremaData(chart, series, data) {
   series.setMarkers(markersData);
 }
 
-export function updateChartWithWaveData(chart, waveseries, candleSeries, candleSeriesData, data) {
+export async function updateChartWithWaveData(chart, waveseries, candleSeries, candleSeriesData, data) {
   // if (!data.every(item => isValidWaveData(item))) {
   //     console.log('Invalid wave data');
   //     return;
@@ -155,7 +155,7 @@ export function updateChartWithWaveData(chart, waveseries, candleSeries, candleS
  * @param {Array} data - The trend data to use for updating the chart.
  */
 
-export function updateChartWithTrendData(chart, candlesData, data) {
+export async function updateChartWithTrendData(chart, candlesData, data) {
 
   trendSeries.forEach(series => chart.removeSeries(series));
   trendSeries.forEach(series => series.setMarkers([]));

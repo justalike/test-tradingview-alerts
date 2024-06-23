@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
   try {
     const barsInfo = series.candles_series.barsInLogicalRange(newVisibleLogicalRange);
-    console.log(isInUpdateState)
+    console.log(`update state:`, isInUpdateState)
     // If there are less than 50 bars to the left of the visible area, load more data
     if (barsInfo !== null && barsInfo.barsBefore < 50 && !isInUpdateState) {
       isInUpdateState = true
@@ -138,16 +138,13 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
     }
     const earliestVisibleTime = chart.timeScale().getVisibleRange().from;
     const startDateForFetch = getCurrentYYMMDD(earliestVisibleTime * 1000); // back to ms
-    const candlePreloadResult = throttledPreLoadHistoryCandles(symbol, timeframe, startDateForFetch)
-    const linesPreloadResult = throttledPreLoadHistoryLines(symbol, timeframe)
+    throttledPreLoadHistoryCandles(symbol, timeframe, startDateForFetch)
+    throttledPreLoadHistoryLines(symbol, timeframe)
+    isInUpdateState = false
   } catch (error) {
     console.error(`Error loading historical data for ${symbol} on ${timeframe}:`, error);
   }
-  finally {
 
-    isInUpdateState = false
-
-  }
 }
 
 
