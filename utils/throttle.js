@@ -1,5 +1,5 @@
-import { getHistoryCandles, preLoadHistoryCandles, getHistoryLines, preLoadHistoryLines } from '../api/dataService.js';
-import { onVisibleLogicalRangeChanged } from '../main.js';
+// import { getHistoryCandles, preLoadHistoryCandles, getHistoryLines, preLoadHistoryLines } from '../api/dataService.js';
+// import { onVisibleLogicalRangeChanged } from '../main.js';
 
 function throttle(func, interval) {
   let lastCall = 0;

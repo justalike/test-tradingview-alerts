@@ -8,6 +8,8 @@ import { fetchCandleData, getHistoryCandles, preLoadHistoryCandles, getHistoryLi
 import { connectWebSocket } from './api/ws.js';
 
 
+var isInUpdateState = false;
+
 console.log(`__..--..`.repeat(10))
 
 const chartContainer = document.getElementById('tvchart');
@@ -15,7 +17,7 @@ const chart = LightweightCharts.createChart(chartContainer, cfg.chartProperties)
 
 
 
-const throttleInterval = 3000; // Throttle interval in milliseconds
+const throttleInterval = 1000; // Throttle interval in milliseconds
 
 const throttledGetHistoryCandles = asyncThrottle(getHistoryCandles, throttleInterval);
 const throttledPreLoadHistoryCandles = asyncThrottle(preLoadHistoryCandles, throttleInterval);
@@ -70,8 +72,8 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
   try {
     const barsInfo = series.candles_series.barsInLogicalRange(newVisibleLogicalRange);
     // If there are less than 50 bars to the left of the visible area, load more data
-    if (barsInfo !== null && barsInfo.barsBefore < 50) {
-
+    if (barsInfo !== null && barsInfo.barsBefore < 50 && !isInUpdateState) {
+      isInUpdateState = true
       const earliestVisibleTime = chart.timeScale().getVisibleRange().from;
       const startDateForFetch = getCurrentYYMMDD(earliestVisibleTime * 1000); // back to ms
 
@@ -140,6 +142,9 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
     }
   } catch (error) {
     console.error(`Error loading historical data for ${symbol} on ${timeframe}:`, error);
+  }
+  finally {
+    isInUpdateState = false
   }
 }
 
