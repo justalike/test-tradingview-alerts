@@ -58,10 +58,10 @@ const { symbol, timeframe } = await getQueryParams();
 window.addEventListener('resize', setChartSize(chart));
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    await initializeChartWithData(chart, series);
-    await connectWebSocket(series);
-    await throttledPreLoadHistoryCandles(symbol, timeframe);
-    await throttledPreLoadHistoryLines(symbol, timeframe);
+    initializeChartWithData(chart, series);
+    connectWebSocket(series);
+    throttledPreLoadHistoryCandles(symbol, timeframe);
+    throttledPreLoadHistoryLines(symbol, timeframe);
   } catch (error) {
     console.error('Error:', error);
     // Handle the error appropriately
@@ -136,15 +136,17 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
       })
 
     }
+    const earliestVisibleTime = chart.timeScale().getVisibleRange().from;
+    const startDateForFetch = getCurrentYYMMDD(earliestVisibleTime * 1000); // back to ms
+    const candlePreloadResult = throttledPreLoadHistoryCandles(symbol, timeframe, startDateForFetch)
+    const linesPreloadResult = throttledPreLoadHistoryLines(symbol, timeframe)
   } catch (error) {
     console.error(`Error loading historical data for ${symbol} on ${timeframe}:`, error);
   }
   finally {
-    const earliestVisibleTime = chart.timeScale().getVisibleRange().from;
-    const startDateForFetch = getCurrentYYMMDD(earliestVisibleTime * 1000); // back to ms
+
     isInUpdateState = false
-    const candlePreloadResult = await throttledPreLoadHistoryCandles(symbol, timeframe, startDateForFetch)
-    const linesPreloadResult = await throttledPreLoadHistoryLines(symbol, timeframe)
+
   }
 }
 
