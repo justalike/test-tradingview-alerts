@@ -178,7 +178,7 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
       if (newTimeframe !== currentTimeframe) {
         reloadPageWithNewTimeframe(newTimeframe);
       }
-    } else if (visibleBars < zoomInThreshold) {
+    } else if (visibleBars < zoomInThreshold && visibleBars > 5) {
       const newTimeframe = changeToLowerTimeframe(currentTimeframe, timeframes);
       if (newTimeframe !== currentTimeframe) {
         reloadPageWithNewTimeframe(newTimeframe);
