@@ -63,16 +63,6 @@ setInterval(() => {
   checkAndChangeTimeframe(chart, timeframes, currentTimeframe);
 }, 1000); // Check every second
 
-function checkAndChangeTimeframe(chart) {
-  const visibleBars = getVisibleBarsCount(chart);
-
-  if (visibleBars > zoomOutThreshold) {
-    changeToHigherTimeframe(chart);
-  } else if (visibleBars < zoomInThreshold) {
-    changeToLowerTimeframe(chart);
-  }
-}
-
 function reloadPageWithNewTimeframe(newTimeframe) {
   const url = new URL(window.location.href);
   url.searchParams.set('timeframe', newTimeframe);
@@ -97,15 +87,7 @@ function changeToLowerTimeframe(chart, timeframes) {
   }
 }
 
-function changeToLowerTimeframe(chart) {
-  // Set the chart to a lower timeframe, e.g., 1 hour
-  chart.setTimeframe('1H');
-}
 
-
-setInterval(() => {
-  checkAndChangeTimeframe(chart);
-}, 1000); // Check every second
 
 
 
@@ -163,7 +145,6 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
 
     // If there are less than 50 bars to the left of the visible area, load more data
     if (barsInfo !== null && barsInfo.barsBefore < 50) {
-      const totalBars = barsInfo.barsBefore + barsInfo.barsAfter;
 
       const historicalCandles = await throttledGetHistoryCandles(symbol, timeframe);
       const fetchedCandles = await fetchCandleData(symbol, timeframe)
