@@ -24,72 +24,6 @@ const throttledGetHistoryLines = asyncThrottle(getHistoryLines, throttleInterval
 const throttledPreLoadHistoryLines = asyncThrottle(preLoadHistoryLines, throttleInterval);
 
 const onVisibleLogicalRangeChangedThrottled = asyncThrottle(onVisibleLogicalRangeChanged, throttleInterval);
-// Function to get the number of visible bars
-function getVisibleBarsCount(chart) {
-  const barsInfo = chart.barsInLogicalRange();
-  if (barsInfo.from !== undefined && barsInfo.to !== undefined) {
-    return barsInfo.to - barsInfo.from + 1;
-  }
-  return 0;
-}
-
-// Define thresholds
-const basicCandleCount = 700;
-const zoomOutThreshold = 2500;
-const zoomInThreshold = 100;
-const timeframes = ['1m', '5m', '15m', '1h', '4h', '1d'];
-
-
-// Function to change the timeframe based on the visible bars count
-function checkAndChangeTimeframe(chart, timeframes, currentTimeframe) {
-  const visibleBars = getVisibleBarsCount(chart);
-
-  if (visibleBars > zoomOutThreshold) {
-    const newTimeframe = changeToHigherTimeframe(currentTimeframe, timeframes);
-    if (newTimeframe !== currentTimeframe) {
-      reloadPageWithNewTimeframe(newTimeframe);
-    }
-  } else if (visibleBars < zoomInThreshold) {
-    const newTimeframe = changeToLowerTimeframe(currentTimeframe, timeframes);
-    if (newTimeframe !== currentTimeframe) {
-      reloadPageWithNewTimeframe(newTimeframe);
-    }
-  }
-}
-
-// Periodically check the number of visible bars and adjust the timeframe
-const currentTimeframe = new URL(window.location.href).searchParams.get('timeframe');
-setInterval(() => {
-  checkAndChangeTimeframe(chart, timeframes, currentTimeframe);
-}, 1000); // Check every second
-
-function reloadPageWithNewTimeframe(newTimeframe) {
-  const url = new URL(window.location.href);
-  url.searchParams.set('timeframe', newTimeframe);
-  window.location.href = url.toString();
-}
-
-function getCurrentTimeframeIndex(chart, timeframes) {
-  const currentTimeframe = chart.getTimeframe();
-  return timeframes.indexOf(currentTimeframe);
-}
-function changeToHigherTimeframe(chart, timeframes) {
-  const currentIndex = getCurrentTimeframeIndex(chart, timeframes);
-  if (currentIndex < timeframes.length - 1) {
-    chart.setTimeframe(timeframes[currentIndex + 1]);
-  }
-}
-
-function changeToLowerTimeframe(chart, timeframes) {
-  const currentIndex = getCurrentTimeframeIndex(chart, timeframes);
-  if (currentIndex > 0) {
-    chart.setTimeframe(timeframes[currentIndex - 1]);
-  }
-}
-
-
-
-
 
 
 // Applying global chart options
@@ -133,8 +67,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Handle the error appropriately
   }
 });
+const timeframes = ['1m', '5m', '15m', '1h', '4h', '1d'];
 
 let isUpdating = false;
+
+function getCurrentTimeframeIndex(currentTimeframe, timeframes) {
+  return timeframes.indexOf(currentTimeframe);
+}
+
+function changeToHigherTimeframe(currentTimeframe, timeframes) {
+  const currentIndex = getCurrentTimeframeIndex(currentTimeframe, timeframes);
+  if (currentIndex < timeframes.length - 1) {
+    return timeframes[currentIndex + 1];
+  }
+  return currentTimeframe; // Return current timeframe if already at highest
+}
+
+function changeToLowerTimeframe(currentTimeframe, timeframes) {
+  const currentIndex = getCurrentTimeframeIndex(currentTimeframe, timeframes);
+  if (currentIndex > 0) {
+    return timeframes[currentIndex - 1];
+  }
+  return currentTimeframe; // Return current timeframe if already at lowest
+}
+
+function reloadPageWithNewTimeframe(newTimeframe) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('timeframe', newTimeframe);
+  window.location.href = url.toString();
+}
 
 async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
   if (isUpdating) return;
@@ -145,9 +106,8 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
 
     // If there are less than 50 bars to the left of the visible area, load more data
     if (barsInfo !== null && barsInfo.barsBefore < 50) {
-
       const historicalCandles = await throttledGetHistoryCandles(symbol, timeframe);
-      const fetchedCandles = await fetchCandleData(symbol, timeframe)
+      const fetchedCandles = await fetchCandleData(symbol, timeframe);
 
       const { extremum, wave, trends } = await throttledGetHistoryLines(symbol, timeframe);
 
@@ -156,69 +116,80 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
       ...fetchedCandles] : historicalCandles;
 
       const volumes = mergedCandles.map(({ time, volume }) => ({ time, value: volume }));
-      // calculate Volume moving average with length 200
+      // Calculate Volume moving average with length 200
       const VMA200 = calculateVMA(volumes, 200);
-      console.log('VMA200', VMA200)
-      // calculate Volume moving average with length 5
-
+      console.log('VMA200', VMA200);
+      // Calculate Volume moving average with length 5
       const VMA5 = calculateVMA(volumes, 5);
-      console.log('VMA200', VMA200)
+      console.log('VMA5', VMA5);
       if (!historicalCandles || !fetchedCandles) {
-        console.error('Existing or fetched candles are nullish')
+        console.error('Existing or fetched candles are nullish');
       }
 
-      await updateSeriesData(series.candles_series, mergedCandles)
+      await updateSeriesData(series.candles_series, mergedCandles);
 
+      if (!volumes) { console.log('Volumes are nullish'); }
+      updateSeriesData(series.volume_series, volumes);
+      updateSeriesData(series.vma_200, VMA200);
+      updateSeriesData(series.vma_5, VMA5);
+      updateSeriesOptions(series.vma_200, { color: '#2D1FF0' });
+      updateSeriesOptions(series.vma_5, { color: '#F49212' });
 
-      if (!volumes) { console.log('Volumes are nullish') }
-      updateSeriesData(series.volume_series, volumes)
-      updateSeriesData(series.vma_200, VMA200)
-      updateSeriesData(series.vma_5, VMA5)
-      updateSeriesOptions(series.vma_200, { color: '#2D1FF0' })
-      updateSeriesOptions(series.vma_5, { color: '#F49212' })
+      if (!extremum || !wave || !trends) { console.log('Extremum, wave, or trends are nullish'); }
 
-
-      if (!extremum || !wave || !trends) { console.log('Extrema or wave or trends are nullish') }
-
-      updateChartWithExtremaData(chart, series.extrema_series, extremum)
+      updateChartWithExtremaData(chart, series.extrema_series, extremum);
       updateChartWithWaveData(chart, series.wave_series, series.candles_series, mergedCandles, wave);
-      updateChartWithTrendData(chart, mergedCandles, trends)
-
+      updateChartWithTrendData(chart, mergedCandles, trends);
 
       series.vma_200.priceScale().applyOptions({
         scaleMargins: {
           top: 0.7,
           bottom: 0,
         },
-      })
-
+      });
 
       series.vma_5.priceScale().applyOptions({
         scaleMargins: {
           top: 0.7,
           bottom: 0,
         },
-      })
+      });
       series.volume_series.priceScale().applyOptions({
         scaleMargins: {
           top: 0.7,
           bottom: 0,
         },
-      })
+      });
 
       const earliestVisibleTime = chart.timeScale().getVisibleRange().from;
       const startDateForFetch = getCurrentYYMMDD(earliestVisibleTime * 1000); // back to ms
-      throttledPreLoadHistoryCandles(symbol, timeframe, startDateForFetch)
-      throttledPreLoadHistoryLines(symbol, timeframe)
+      throttledPreLoadHistoryCandles(symbol, timeframe, startDateForFetch);
+      throttledPreLoadHistoryLines(symbol, timeframe);
     }
 
+    // Check number of visible bars and adjust timeframe if necessary
+    const visibleBars = barsInfo.to - barsInfo.from + 1;
+    const zoomOutThreshold = 2500;
+    const zoomInThreshold = 100;
+
+    const currentTimeframe = new URL(window.location.href).searchParams.get('timeframe');
+    if (visibleBars > zoomOutThreshold) {
+      const newTimeframe = changeToHigherTimeframe(currentTimeframe, timeframes);
+      if (newTimeframe !== currentTimeframe) {
+        reloadPageWithNewTimeframe(newTimeframe);
+      }
+    } else if (visibleBars < zoomInThreshold) {
+      const newTimeframe = changeToLowerTimeframe(currentTimeframe, timeframes);
+      if (newTimeframe !== currentTimeframe) {
+        reloadPageWithNewTimeframe(newTimeframe);
+      }
+    }
 
   } catch (error) {
     console.error(`Error loading historical data for ${symbol} on ${timeframe}:`, error);
   } finally {
     isUpdating = false;
   }
-
 }
 
 
