@@ -97,6 +97,55 @@ function reloadPageWithNewTimeframe(newTimeframe) {
   window.location.href = url.toString();
 }
 
+function timeframeToMinutes(timeframe) {
+  const unit = timeframe.slice(-1);
+  const value = parseInt(timeframe.slice(0, -1), 10);
+
+  switch (unit) {
+    case 'm':
+      return value;
+    case 'h':
+      return value * 60;
+    case 'd':
+      return value * 60 * 24;
+    default:
+      throw new Error(`Unknown timeframe unit: ${unit}`);
+  }
+}
+
+function getZoomTresholds(currentTimeframe, timeframes) {
+  const baseCandlesVisible = 700;
+  let zoomInX, zoomOutX;
+
+  const currentIndex = timeframes.indexOf(currentTimeframe);
+  const nextIndex = currentIndex + 1;
+  const prevIndex = currentIndex - 1;
+
+  let nextTimeframe = timeframes[nextIndex];
+  if (nextIndex === timeframes.length) {
+    nextTimeframe = timeframes[currentIndex];
+  }
+
+  let prevTimeframe = timeframes[prevIndex];
+  if (prevIndex === -1) {
+    prevTimeframe = timeframes[currentIndex];
+  }
+
+  const currentMinutes = timeframeToMinutes(currentTimeframe);
+  const nextMinutes = timeframeToMinutes(nextTimeframe);
+  const prevMinutes = timeframeToMinutes(prevTimeframe);
+
+  const zoomInMultiplier = nextMinutes / currentMinutes;
+  const zoomOutMultiplier = prevMinutes / currentMinutes;
+
+  zoomInX = baseCandlesVisible / zoomInMultiplier;
+  zoomOutX = baseCandlesVisible * zoomOutMultiplier;
+
+  console.log('zoomInX', zoomInX, 'zoomOutX', zoomOutX)
+  return { zoomInX, zoomOutX };
+}
+
+
 async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
   if (isUpdating) return;
 
@@ -168,21 +217,21 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
     }
 
     // Check number of visible bars and adjust timeframe if necessary
-
+    const currentTimeframe = new URL(window.location.href).searchParams.get('timeframe');
+    console.log(currentTimeframe, 'current timeframe');
     console.log(`newVisibleLgicalRange:`, newVisibleLogicalRange)
     const visibleBars = newVisibleLogicalRange.to - newVisibleLogicalRange.from + 1;
 
     console.log(visibleBars, 'visible bars');
-    const zoomOutThreshold = 2400
-    const zoomInThreshold = 50
+    const { zoomInX, zoomOutX } = getZoomTresholds(currentTimeframe, timeframes);
 
-    const currentTimeframe = new URL(window.location.href).searchParams.get('timeframe');
-    if (visibleBars > zoomOutThreshold) {
+
+    if (visibleBars > zoomOutX) {
       const newTimeframe = changeToHigherTimeframe(currentTimeframe, timeframes);
       if (newTimeframe !== currentTimeframe) {
         reloadPageWithNewTimeframe(newTimeframe);
       }
-    } else if (visibleBars < zoomInThreshold && visibleBars > 5) {
+    } else if (visibleBars < zoomInX && visibleBars > 5) {
       const newTimeframe = changeToLowerTimeframe(currentTimeframe, timeframes);
       if (newTimeframe !== currentTimeframe) {
         reloadPageWithNewTimeframe(newTimeframe);
