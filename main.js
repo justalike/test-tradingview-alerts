@@ -144,6 +144,8 @@ function getZoomTresholds(currentTimeframe, timeframes) {
   zoomInX = baseCandlesVisible / zoomInMultiplier;
   zoomOutX = baseCandlesVisible * zoomOutMultiplier;
 
+  if (currentTimeframe == '1d') zoomOutX / 2;
+  if (zoomInX > 150) zoomInX / 2
   console.log('zoomInX', zoomInX, 'zoomOutX', zoomOutX)
   return { zoomInX, zoomOutX };
 }
