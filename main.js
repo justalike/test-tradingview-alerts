@@ -168,6 +168,8 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
     }
 
     // Check number of visible bars and adjust timeframe if necessary
+    console.log(`Barsinfo:`, barsInfo)
+    console.log(`newVisibleLgicalRange:`, newVisibleLogicalRange)
     const visibleBars = barsInfo.to - barsInfo.from + 1;
     console.log(visibleBars, 'visible bars');
     const zoomOutThreshold = 10 * 1000 * 1000;
@@ -187,7 +189,7 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
     }
 
   } catch (error) {
-    console.error(`Error loading historical data for ${symbol} on ${timeframe}:`, error);
+    console.error(`Error loading historical data for ${symbol} on ${timeframe}: `, error);
   } finally {
     isUpdating = false;
   }
