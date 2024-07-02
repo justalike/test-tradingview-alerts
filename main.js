@@ -168,12 +168,13 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
     }
 
     // Check number of visible bars and adjust timeframe if necessary
-    console.log(`Barsinfo:`, barsInfo)
+
     console.log(`newVisibleLgicalRange:`, newVisibleLogicalRange)
-    const visibleBars = barsInfo.to - barsInfo.from + 1;
+    const visibleBars = newVisibleLogicalRange.to - newVisibleLogicalRange.from + 1;
+
     console.log(visibleBars, 'visible bars');
-    const zoomOutThreshold = 10 * 1000 * 1000;
-    const zoomInThreshold = 1 * 1000 * 1000;
+    const zoomOutThreshold = 2400
+    const zoomInThreshold = 100
 
     const currentTimeframe = new URL(window.location.href).searchParams.get('timeframe');
     if (visibleBars > zoomOutThreshold) {
