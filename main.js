@@ -56,6 +56,7 @@ const { symbol, timeframe } = await getQueryParams();
 
 
 window.addEventListener('resize', setChartSize(chart));
+
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     await initializeChartWithData(chart, series);
@@ -139,7 +140,7 @@ function getZoomTresholds(currentTimeframe, timeframes) {
   const zoomInMultiplier = currentMinutes / prevMinutes;
   const zoomOutMultiplier = nextMinutes / currentMinutes;
 
-  zoomInX = Math.min((baseCandlesVisible / zoomInMultiplier), 150);
+  zoomInX = Math.min((baseCandlesVisible / zoomInMultiplier), 50);
   zoomOutX = Math.min((baseCandlesVisible * zoomOutMultiplier), 3000); //baseCandlesVisible * zoomOutMultiplier ;
 
   console.log('zoomInX', zoomInX, 'zoomOutX', zoomOutX)
@@ -168,10 +169,10 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
       const volumes = mergedCandles.map(({ time, volume }) => ({ time, value: volume }));
       // Calculate Volume moving average with length 200
       const VMA200 = calculateVMA(volumes, 200);
-      console.log('VMA200', VMA200);
+      //console.log('VMA200', VMA200);
       // Calculate Volume moving average with length 5
       const VMA5 = calculateVMA(volumes, 5);
-      console.log('VMA5', VMA5);
+      //console.log('VMA5', VMA5);
       if (!historicalCandles || !fetchedCandles) {
         console.error('Existing or fetched candles are nullish');
       }
@@ -184,12 +185,6 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
       updateSeriesData(series.vma_5, VMA5);
       updateSeriesOptions(series.vma_200, { color: '#2D1FF0' });
       updateSeriesOptions(series.vma_5, { color: '#F49212' });
-
-      if (!extremum || !wave || !trends) { console.log('Extremum, wave, or trends are nullish'); }
-
-      updateChartWithExtremaData(chart, series.extrema_series, extremum);
-      updateChartWithWaveData(chart, series.wave_series, series.candles_series, mergedCandles, wave);
-      updateChartWithTrendData(chart, mergedCandles, trends);
 
       series.vma_200.priceScale().applyOptions({
         scaleMargins: {
@@ -210,6 +205,12 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
           bottom: 0,
         },
       });
+
+      if (!extremum || !wave || !trends) { console.log('Extremum, wave, or trends are nullish'); }
+
+      updateChartWithExtremaData(chart, series.extrema_series, extremum);
+      updateChartWithWaveData(chart, series.wave_series, series.candles_series, mergedCandles, wave);
+      updateChartWithTrendData(chart, mergedCandles, trends);
 
       const earliestVisibleTime = chart.timeScale().getVisibleRange().from;
       const startDateForFetch = getCurrentYYMMDD(earliestVisibleTime * 1000); // back to ms
