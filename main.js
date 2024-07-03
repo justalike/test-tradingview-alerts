@@ -139,8 +139,8 @@ function getZoomTresholds(currentTimeframe, timeframes) {
   const zoomInMultiplier = currentMinutes / prevMinutes;
   const zoomOutMultiplier = nextMinutes / currentMinutes;
 
-  zoomInX = (baseCandlesVisible / zoomInMultiplier) / 2;
-  zoomOutX = baseCandlesVisible * zoomOutMultiplier;
+  zoomInX = Math.min((baseCandlesVisible / zoomInMultiplier), 150);
+  zoomOutX = Math.min((baseCandlesVisible * zoomOutMultiplier), 3000); //baseCandlesVisible * zoomOutMultiplier ;
 
   console.log('zoomInX', zoomInX, 'zoomOutX', zoomOutX)
   return { zoomInX, zoomOutX };
