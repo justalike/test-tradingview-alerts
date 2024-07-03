@@ -61,8 +61,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     await initializeChartWithData(chart, series);
     await connectWebSocket(series);
-    throttledPreLoadHistoryCandles(symbol, timeframe);
-    throttledPreLoadHistoryLines(symbol, timeframe);
+    await throttledPreLoadHistoryCandles(symbol, timeframe);
+    await throttledPreLoadHistoryLines(symbol, timeframe);
   } catch (error) {
     console.error('Error:', error);
     // Handle the error appropriately
@@ -180,9 +180,9 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
       await updateSeriesData(series.candles_series, mergedCandles);
 
       if (!volumes) { console.log('Volumes are nullish'); }
-      updateSeriesData(series.volume_series, volumes);
-      updateSeriesData(series.vma_200, VMA200);
-      updateSeriesData(series.vma_5, VMA5);
+      await updateSeriesData(series.volume_series, volumes);
+      await updateSeriesData(series.vma_200, VMA200);
+      await updateSeriesData(series.vma_5, VMA5);
       updateSeriesOptions(series.vma_200, { color: '#2D1FF0' });
       updateSeriesOptions(series.vma_5, { color: '#F49212' });
 
@@ -208,14 +208,14 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
 
       if (!extremum || !wave || !trends) { console.log('Extremum, wave, or trends are nullish'); }
 
-      updateChartWithExtremaData(chart, series.extrema_series, extremum);
-      updateChartWithWaveData(chart, series.wave_series, series.candles_series, mergedCandles, wave);
-      updateChartWithTrendData(chart, mergedCandles, trends);
+      await updateChartWithExtremaData(chart, series.extrema_series, extremum);
+      await updateChartWithWaveData(chart, series.wave_series, series.candles_series, mergedCandles, wave);
+      await updateChartWithTrendData(chart, mergedCandles, trends);
 
       const earliestVisibleTime = chart.timeScale().getVisibleRange().from;
       const startDateForFetch = getCurrentYYMMDD(earliestVisibleTime * 1000); // back to ms
-      throttledPreLoadHistoryCandles(symbol, timeframe, startDateForFetch);
-      throttledPreLoadHistoryLines(symbol, timeframe);
+      await throttledPreLoadHistoryCandles(symbol, timeframe, startDateForFetch);
+      await throttledPreLoadHistoryLines(symbol, timeframe);
     }
 
     // Check number of visible bars and adjust timeframe if necessary
