@@ -254,74 +254,74 @@ chart
   );
 
 
-document.getElementById('loadDataButton')
-  .addEventListener('click', async () => {
-    try {
-      const candlePreloadResult = await throttledPreLoadHistoryCandles(symbol, timeframe)
-      const linesPreloadResult = await throttledPreLoadHistoryLines(symbol, timeframe)
+// document.getElementById('loadDataButton')
+//   .addEventListener('click', async () => {
+//     try {
+//       const candlePreloadResult = await throttledPreLoadHistoryCandles(symbol, timeframe)
+//       const linesPreloadResult = await throttledPreLoadHistoryLines(symbol, timeframe)
 
-      const { extremum, wave, trends } = await throttledGetHistoryLines(symbol, timeframe);
+//       const { extremum, wave, trends } = await throttledGetHistoryLines(symbol, timeframe);
 
-      const historicalCandles = await throttledGetHistoryCandles(symbol, timeframe);
-      const fetchedCandles = await fetchCandleData(symbol, timeframe)
+//       const historicalCandles = await throttledGetHistoryCandles(symbol, timeframe);
+//       const fetchedCandles = await fetchCandleData(symbol, timeframe)
 
-      const mergedCandles = fetchedCandles ? [...historicalCandles
-        .filter(candle => candle.time < fetchedCandles[0].time),
-      ...fetchedCandles] : historicalCandles;
+//       const mergedCandles = fetchedCandles ? [...historicalCandles
+//         .filter(candle => candle.time < fetchedCandles[0].time),
+//       ...fetchedCandles] : historicalCandles;
 
-      const volumes = mergedCandles.map(({ time, volume }) => ({ time, value: volume }));
-      // calculate Volume moving average with length 200
-      const VMA200 = calculateVMA(volumes, 200);
-      // calculate Volume moving average with length 5
+//       const volumes = mergedCandles.map(({ time, volume }) => ({ time, value: volume }));
+//       // calculate Volume moving average with length 200
+//       const VMA200 = calculateVMA(volumes, 200);
+//       // calculate Volume moving average with length 5
 
-      const VMA5 = calculateVMA(volumes, 5);
+//       const VMA5 = calculateVMA(volumes, 5);
 
-      if (historicalCandles && fetchedCandles) {
-        updateSeriesData(series.candles_series, mergedCandles)
-        updateSeriesData(series.volume_series, volumes)
-        updateSeriesData(series.vma_200, VMA200)
-        updateSeriesData(series.vma_5, VMA5)
-        updateSeriesOptions(series.vma_200, { color: '#2D1FF0' })
-        updateSeriesOptions(series.vma_5, { color: '#F49212' })
-
-
-      }
-
-      if (extremum && wave && trends) {
-        updateChartWithExtremaData(chart, series.extrema_series, extremum)
-        updateChartWithWaveData(chart, series.wave_series, series.candles_series, mergedCandles, wave);
-        updateChartWithTrendData(chart, mergedCandles, trends)
-      }
-
-      series.vma_200.priceScale().applyOptions({
-        scaleMargins: {
-          top: 0.7,
-          bottom: 0,
-        },
-      })
+//       if (historicalCandles && fetchedCandles) {
+//         updateSeriesData(series.candles_series, mergedCandles)
+//         updateSeriesData(series.volume_series, volumes)
+//         updateSeriesData(series.vma_200, VMA200)
+//         updateSeriesData(series.vma_5, VMA5)
+//         updateSeriesOptions(series.vma_200, { color: '#2D1FF0' })
+//         updateSeriesOptions(series.vma_5, { color: '#F49212' })
 
 
-      series.vma_5.priceScale().applyOptions({
-        scaleMargins: {
-          top: 0.7,
-          bottom: 0,
-        },
-      })
+//       }
+
+//       if (extremum && wave && trends) {
+//         updateChartWithExtremaData(chart, series.extrema_series, extremum)
+//         updateChartWithWaveData(chart, series.wave_series, series.candles_series, mergedCandles, wave);
+//         updateChartWithTrendData(chart, mergedCandles, trends)
+//       }
+
+//       series.vma_200.priceScale().applyOptions({
+//         scaleMargins: {
+//           top: 0.7,
+//           bottom: 0,
+//         },
+//       })
 
 
-      series.volume_series.priceScale().applyOptions({
-        scaleMargins: {
-          top: 0.7,
-          bottom: 0,
-        },
-      })
+//       series.vma_5.priceScale().applyOptions({
+//         scaleMargins: {
+//           top: 0.7,
+//           bottom: 0,
+//         },
+//       })
 
-    }
-    catch (error) {
-      console.error(error);
-    }
 
-  });
+//       series.volume_series.priceScale().applyOptions({
+//         scaleMargins: {
+//           top: 0.7,
+//           bottom: 0,
+//         },
+//       })
+
+//     }
+//     catch (error) {
+//       console.error(error);
+//     }
+
+//   });
 
 // document.getElementById('dataFile').addEventListener('change', (event) => {
 //     const file = event.target.files[0];
