@@ -58,8 +58,8 @@ const { symbol, timeframe } = await getQueryParams();
 window.addEventListener('resize', setChartSize(chart));
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    initializeChartWithData(chart, series);
-    connectWebSocket(series);
+    await initializeChartWithData(chart, series);
+    await connectWebSocket(series);
     throttledPreLoadHistoryCandles(symbol, timeframe);
     throttledPreLoadHistoryLines(symbol, timeframe);
   } catch (error) {
@@ -132,20 +132,16 @@ function getZoomTresholds(currentTimeframe, timeframes) {
   }
 
   const currentMinutes = timeframeToMinutes(currentTimeframe);
-  console.log('currentMinutes', currentMinutes)
+
   const nextMinutes = timeframeToMinutes(nextTimeframe);
   const prevMinutes = timeframeToMinutes(prevTimeframe);
-
-  console.log('nextMinutes', nextMinutes, 'prevMinutes', prevMinutes)
 
   const zoomInMultiplier = currentMinutes / prevMinutes;
   const zoomOutMultiplier = nextMinutes / currentMinutes;
 
-  zoomInX = baseCandlesVisible / zoomInMultiplier;
+  zoomInX = (baseCandlesVisible / zoomInMultiplier) / 2;
   zoomOutX = baseCandlesVisible * zoomOutMultiplier;
 
-  if (currentTimeframe == '1d') zoomOutX / 2;
-  if (zoomInX > 150) zoomInX / 2
   console.log('zoomInX', zoomInX, 'zoomOutX', zoomOutX)
   return { zoomInX, zoomOutX };
 }

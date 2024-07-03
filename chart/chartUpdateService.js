@@ -58,7 +58,7 @@ export const initializeChartWithData = async (chart, series, sym = 'BTC/USDT', t
           },
         })
 
-        updateSeriesData(series.candles_series, data)
+        await updateSeriesData(series.candles_series, data)
         updateSeriesData(series.volume_series, volData)
         updateSeriesData(series.vma_200, VMA200)
         updateSeriesData(series.vma_5, VMA5)
@@ -67,13 +67,13 @@ export const initializeChartWithData = async (chart, series, sym = 'BTC/USDT', t
         //updateCandleSeries(data);
       } else if (name === 'extrema') {
 
-        updateChartWithExtremaData(chart, series.extrema_series, data);
+        await updateChartWithExtremaData(chart, series.extrema_series, data);
       } else if (name === 'waves') {
 
-        updateChartWithWaveData(chart, series.wave_series, series.candles_series, dataSources.candles, data);
+        await updateChartWithWaveData(chart, series.wave_series, series.candles_series, dataSources.candles, data);
       } else if (name === 'trends') {
 
-        updateChartWithTrendData(chart, fetchedCandles, data);
+        await updateChartWithTrendData(chart, fetchedCandles, data);
       }
     }
 
@@ -114,7 +114,7 @@ export async function updateChartWithExtremaData(chart, series, data) {
     return acc;
   }, []);
 
-  updateSeriesData(series, uniqueLineData);
+  await updateSeriesData(series, uniqueLineData);
 
 
   const markersData = data.map(item => ({
@@ -143,9 +143,9 @@ export async function updateChartWithWaveData(chart, waveseries, candleSeries, c
     color: wave.startValue < wave.endValue ? 'green' : 'red',
   }));
 
-  processKeyBars(chart, waveseries, candleSeries, candleSeriesData, validData)
+  await processKeyBars(chart, waveseries, candleSeries, candleSeriesData, validData)
 
-  updateSeriesData(waveseries, processedData)
+  await updateSeriesData(waveseries, processedData)
 
 }
 
@@ -296,7 +296,7 @@ export async function loadHistoryToChart(series, symbol, timeframe) {
   //console.log(mergedCandles.length)
   const volumes = mergedCandles.map(({ time, volume }) => ({ time, value: volume }));
 
-  updateSeriesData(series.historycandles_series, mergedCandles)
-  updateSeriesData(series.historyvolume_series, volumes)
+  await updateSeriesData(series.historycandles_series, mergedCandles)
+  await updateSeriesData(series.historyvolume_series, volumes)
 
 }
