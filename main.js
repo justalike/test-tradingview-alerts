@@ -60,7 +60,7 @@ window.addEventListener('resize', setChartSize(chart));
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     await initializeChartWithData(chart, series);
-    //wait connectWebSocket(series);
+    await connectWebSocket(series);
     await throttledPreLoadHistoryCandles(symbol, timeframe);
     await throttledPreLoadHistoryLines(symbol, timeframe);
   } catch (error) {
