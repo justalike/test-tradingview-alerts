@@ -101,12 +101,12 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
         console.error('Existing or fetched candles are nullish');
       }
 
-      await updateSeriesData(series.candles_series, mergedCandles);
+      updateSeriesData(series.candles_series, mergedCandles);
 
       if (!volumes) { console.log('Volumes are nullish'); }
-      await updateSeriesData(series.volume_series, volumes);
-      await updateSeriesData(series.vma_200, VMA200);
-      await updateSeriesData(series.vma_5, VMA5);
+      updateSeriesData(series.volume_series, volumes);
+      updateSeriesData(series.vma_200, VMA200);
+      updateSeriesData(series.vma_5, VMA5);
       updateSeriesOptions(series.vma_200, { color: '#2D1FF0' });
       updateSeriesOptions(series.vma_5, { color: '#F49212' });
 

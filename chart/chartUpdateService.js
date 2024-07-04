@@ -58,7 +58,7 @@ export const initializeChartWithData = async (chart, series, sym = 'BTC/USDT', t
           },
         })
 
-        await updateSeriesData(series.candles_series, data)
+        updateSeriesData(series.candles_series, data)
         updateSeriesData(series.volume_series, volData)
         updateSeriesData(series.vma_200, VMA200)
         updateSeriesData(series.vma_5, VMA5)
@@ -114,7 +114,7 @@ export async function updateChartWithExtremaData(chart, series, data) {
     return acc;
   }, []);
 
-  await updateSeriesData(series, uniqueLineData);
+  updateSeriesData(series, uniqueLineData);
 
 
   const markersData = data.map(item => ({
@@ -145,7 +145,7 @@ export async function updateChartWithWaveData(chart, waveseries, candleSeries, c
 
   await processKeyBars(chart, waveseries, candleSeries, candleSeriesData, validData)
 
-  await updateSeriesData(waveseries, processedData)
+  updateSeriesData(waveseries, processedData)
 
 }
 
@@ -296,7 +296,7 @@ export async function loadHistoryToChart(series, symbol, timeframe) {
   //console.log(mergedCandles.length)
   const volumes = mergedCandles.map(({ time, volume }) => ({ time, value: volume }));
 
-  await updateSeriesData(series.historycandles_series, mergedCandles)
-  await updateSeriesData(series.historyvolume_series, volumes)
+  updateSeriesData(series.historycandles_series, mergedCandles)
+  updateSeriesData(series.historyvolume_series, volumes)
 
 }

@@ -121,7 +121,7 @@ export const createSeries = (chart, type, config) => {
   return seriesTypes[type]();
 };
 
-export const updateSeriesData = async (series, data) => {
+export const updateSeriesData = (series, data) => {
   //console.log('Updating series data:', series, data);
   series.setData(data);
 };
