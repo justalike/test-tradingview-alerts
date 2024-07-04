@@ -160,7 +160,7 @@ export function getCurrentYYMMDD(timestamp) {
 
   return `${year}-${month}-${day}`;
 }
-export const getQueryParams = async function () {
+export const getQueryParams = function () {
   try {
     console.log(`Getting query parameters`)
     const queryParams = {};

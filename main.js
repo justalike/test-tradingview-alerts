@@ -3,10 +3,10 @@ import * as cfg from './config/index.js';
 import { throttle, asyncThrottle } from './utils/throttle.js';
 import { createSeries, updateSeriesData, setChartSize, getQueryParams, getCurrentYYMMDD, calculateVMA, updateSeriesOptions, removeSeries } from './utils/utils.js';
 import { initializeChartWithData, updateChartWithExtremaData, updateChartWithTrendData, updateChartWithWaveData } from './chart/chartUpdateService.js';
-import { handleCandleDataUpload } from './local/localHandler.js';
 import { fetchCandleData, getHistoryCandles, preLoadHistoryCandles, getHistoryLines, preLoadHistoryLines } from './api/dataService.js';
 import { connectWebSocket } from './api/ws.js';
-
+import { handleCandleDataUpload } from './local/localHandler.js';
+import { getZoomTresholds, reloadPageWithNewTimeframe, changeToHigherTimeframe, changeToLowerTimeframe } from './zoom/zoom.js';
 
 
 console.log(`__..--..`.repeat(10))
@@ -52,7 +52,7 @@ const series = seriesTypesAndConfigs.reduce((acc, { key, type, config }) => {
   return acc;
 }, {});
 
-const { symbol, timeframe } = await getQueryParams();
+const { symbol, timeframe } = getQueryParams();
 
 
 window.addEventListener('resize', setChartSize(chart));
@@ -60,7 +60,7 @@ window.addEventListener('resize', setChartSize(chart));
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     await initializeChartWithData(chart, series);
-    await connectWebSocket(series);
+    //wait connectWebSocket(series);
     await throttledPreLoadHistoryCandles(symbol, timeframe);
     await throttledPreLoadHistoryLines(symbol, timeframe);
   } catch (error) {
@@ -68,84 +68,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Handle the error appropriately
   }
 });
-const timeframes = ['1m', '5m', '15m', '1h', '4h', '1d'];
 
 let isUpdating = false;
-
-function getCurrentTimeframeIndex(currentTimeframe, timeframes) {
-  return timeframes.indexOf(currentTimeframe);
-}
-
-function changeToHigherTimeframe(currentTimeframe, timeframes) {
-  const currentIndex = getCurrentTimeframeIndex(currentTimeframe, timeframes);
-  if (currentIndex < timeframes.length - 1) {
-    return timeframes[currentIndex + 1];
-  }
-  return currentTimeframe; // Return current timeframe if already at highest
-}
-
-function changeToLowerTimeframe(currentTimeframe, timeframes) {
-  const currentIndex = getCurrentTimeframeIndex(currentTimeframe, timeframes);
-  if (currentIndex > 0) {
-    return timeframes[currentIndex - 1];
-  }
-  return currentTimeframe; // Return current timeframe if already at lowest
-}
-
-function reloadPageWithNewTimeframe(newTimeframe) {
-  const url = new URL(window.location.href);
-  url.searchParams.set('timeframe', newTimeframe);
-  window.location.href = url.toString();
-}
-
-function timeframeToMinutes(timeframe) {
-  const unit = timeframe.slice(-1);
-  const value = parseInt(timeframe.slice(0, -1), 10);
-
-  switch (unit) {
-    case 'm':
-      return value;
-    case 'h':
-      return value * 60;
-    case 'd':
-      return value * 60 * 24;
-    default:
-      throw new Error(`Unknown timeframe unit: ${unit}`);
-  }
-}
-
-function getZoomTresholds(currentTimeframe, timeframes) {
-  const baseCandlesVisible = 700;
-  let zoomInX, zoomOutX;
-
-  const currentIndex = timeframes.indexOf(currentTimeframe);
-  const nextIndex = currentIndex + 1;
-  const prevIndex = currentIndex - 1;
-
-  let nextTimeframe = timeframes[nextIndex];
-  if (nextIndex === timeframes.length) {
-    nextTimeframe = timeframes[currentIndex];
-  }
-
-  let prevTimeframe = timeframes[prevIndex];
-  if (prevIndex === -1) {
-    prevTimeframe = timeframes[currentIndex];
-  }
-
-  const currentMinutes = timeframeToMinutes(currentTimeframe);
-
-  const nextMinutes = timeframeToMinutes(nextTimeframe);
-  const prevMinutes = timeframeToMinutes(prevTimeframe);
-
-  const zoomInMultiplier = currentMinutes / prevMinutes;
-  const zoomOutMultiplier = nextMinutes / currentMinutes;
-
-  zoomInX = Math.min((baseCandlesVisible / zoomInMultiplier), 50);
-  zoomOutX = Math.min((baseCandlesVisible * zoomOutMultiplier), 3000); //baseCandlesVisible * zoomOutMultiplier ;
-
-  console.log('zoomInX', zoomInX, 'zoomOutX', zoomOutX)
-  return { zoomInX, zoomOutX };
-}
 
 
 async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
@@ -225,16 +149,16 @@ async function onVisibleLogicalRangeChanged(newVisibleLogicalRange) {
     const visibleBars = newVisibleLogicalRange.to - newVisibleLogicalRange.from + 1;
 
     console.log(visibleBars, 'visible bars');
-    const { zoomInX, zoomOutX } = getZoomTresholds(currentTimeframe, timeframes);
+    const { zoomInX, zoomOutX } = getZoomTresholds(currentTimeframe);
 
 
     if (visibleBars > zoomOutX) {
-      const newTimeframe = changeToHigherTimeframe(currentTimeframe, timeframes);
+      const newTimeframe = changeToHigherTimeframe(currentTimeframe);
       if (newTimeframe !== currentTimeframe) {
         reloadPageWithNewTimeframe(newTimeframe);
       }
     } else if (visibleBars < zoomInX && visibleBars > 5) {
-      const newTimeframe = changeToLowerTimeframe(currentTimeframe, timeframes);
+      const newTimeframe = changeToLowerTimeframe(currentTimeframe);
       if (newTimeframe !== currentTimeframe) {
         reloadPageWithNewTimeframe(newTimeframe);
       }

@@ -48,6 +48,51 @@ async function fetchAllLineData(symbol, timeframe) {
   }
 }
 
+async function getHistoryCandles(symbol, timeframe) {
+
+  console.log(`Trying to GET history candles for ${symbol} with timeframe ${timeframe}`);
+
+  const apiUrl = `https://test-api-one-phi.vercel.app/api/get_history_candles?symbol=${symbol}&timeframe=${timeframe}`;
+  try {
+    const response = await fetch(apiUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to load history candles! HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    console.log(`Loaded history ${data.length} candles for ${symbol} with timeframe ${timeframe}`);
+    return data.map(candle => ({
+      time: candle.timestamp / 1000, // Convert to seconds
+      open: parseFloat(candle.open),
+      high: parseFloat(candle.high),
+      low: parseFloat(candle.low),
+      close: parseFloat(candle.close),
+      volume: parseFloat(candle.volume)
+    }));
+  } catch (error) {
+    console.error(`Failed to preload history candles: ${error.message}`);
+    throw error;
+  }
+}
+
+async function getHistoryLines(symbol, timeframe) {
+
+  console.log(`Trying to GET history LINES for ${symbol} with timeframe ${timeframe}`);
+
+  const apiUrl = `https://test-api-one-phi.vercel.app/api/get_history_lines?symbol=${symbol}&timeframe=${timeframe}`;
+  try {
+    const response = await fetch(apiUrl);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data; // Return the raw data; transformation or further processing can be handled by the caller
+  } catch (error) {
+    console.error('Fetch error:', error);
+    throw error;
+  }
+}
+
+
 /**
  * Preloads historical candle data.
  * @param {string} symbol - The symbol to preload data for.
@@ -97,51 +142,6 @@ async function preLoadHistoryCandles(symbol, timeframe, startDate, endDate = get
   return data;
 
 }
-async function getHistoryCandles(symbol, timeframe) {
-
-  console.log(`Trying to GET history candles for ${symbol} with timeframe ${timeframe}`);
-
-  const apiUrl = `https://test-api-one-phi.vercel.app/api/get_history_candles?symbol=${symbol}&timeframe=${timeframe}`;
-  try {
-    const response = await fetch(apiUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to load history candles! HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    console.log(`Loaded history ${data.length} candles for ${symbol} with timeframe ${timeframe}`);
-    return data.map(candle => ({
-      time: candle.timestamp / 1000, // Convert to seconds
-      open: parseFloat(candle.open),
-      high: parseFloat(candle.high),
-      low: parseFloat(candle.low),
-      close: parseFloat(candle.close),
-      volume: parseFloat(candle.volume)
-    }));
-  } catch (error) {
-    console.error(`Failed to preload history candles: ${error.message}`);
-    throw error;
-  }
-}
-
-async function getHistoryLines(symbol, timeframe) {
-
-  console.log(`Trying to GET history LINES for ${symbol} with timeframe ${timeframe}`);
-
-  const apiUrl = `https://test-api-one-phi.vercel.app/api/get_history_lines?symbol=${symbol}&timeframe=${timeframe}`;
-  try {
-    const response = await fetch(apiUrl);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data; // Return the raw data; transformation or further processing can be handled by the caller
-  } catch (error) {
-    console.error('Fetch error:', error);
-    throw error;
-  }
-}
-
-
 async function preLoadHistoryLines(symbol, timeframe) {
 
   console.log(`Trying to CALCULATE and LOAD history LINES for ${symbol} with timeframe ${timeframe}`);
